@@ -7,10 +7,10 @@
 # pylint: disable=unused-argument, too-many-arguments, too-many-public-methods
 """API client for Gabb.
 
-This contains the GabbClient class, which serves as the main REST API client 
-    for the services used by the Gabb (https://gabb.com) smartwatch/smartphone 
-    for children. While the devices are made by Gabb, they utilize the FiLIP 
-    service provided by Smartcom (https://smartcom.com) to manage the data and 
+This contains the GabbClient class, which serves as the main REST API client
+    for the services used by the Gabb (https://gabb.com) smartwatch/smartphone
+    for children. While the devices are made by Gabb, they utilize the FiLIP
+    service provided by Smartcom (https://smartcom.com) to manage the data and
     devices and that is what the class connects to.
 
 Example:
@@ -18,9 +18,14 @@ Example:
     client.get_contacts()
 """
 import datetime
+import logging
 from urllib.parse import urljoin
+
 import requests
+
 from gabb.session import GabbSession
+
+logger = logging.getLogger(__name__)
 
 
 class GabbClient:
@@ -41,7 +46,7 @@ class GabbClient:
         "X-Accept-Version": "1.0",
         "Content-Type": "application/json",
     }
-    """dict: A dict of static headers that the API requires in order to function 
+    """dict: A dict of static headers that the API requires in order to function
     properly"""
 
     def __init__(
@@ -142,6 +147,7 @@ class GabbClient:
             "guestPrimaryAccess": guest_primary_access,
             "lastName": last_name,
         }
+        logger.debug("Payload for add_contact: %s", payload)
 
         return self._session.post("contact", json=payload)
 
@@ -159,6 +165,8 @@ class GabbClient:
         Example:
             resp = client.delete_contact(5555555)
         """
+        logger.debug("Deleting contact with ID: %s", contact_id)
+
         return self._session.delete(f"contact/{contact_id}")
 
     def get_emergency_contact(self) -> requests.Response:
@@ -193,6 +201,7 @@ class GabbClient:
             )
         """
         payload = {"contactId": contact_id, "isTemplate": False}
+        logger.debug("Payload for set_emergency_contact: %s", payload)
 
         return self._session.put(f"contact/emergency/{device_id}", json=payload)
 
@@ -215,10 +224,10 @@ class GabbClient:
     def update_device_profile(
         self,
         device_id: int,
-        gender: int = None,
-        first_name: str = None,
-        last_name: str = None,
-        birth_date: datetime.datetime = None,
+        gender: int|None = None,
+        first_name: str|None = None,
+        last_name: str|None = None,
+        birth_date: datetime.datetime|None = None,
     ) -> requests.Response:
         """Update device profile, which is the mainly info about the child using
         the device
@@ -253,6 +262,9 @@ class GabbClient:
                 * 1000
             )
 
+        logger.debug(
+            "Payload for update_device_profile for device %s: %s", device_id, payload
+        )
         return self._session.put(f"device/update-profile/{device_id}", json=payload)
 
     def get_map(self) -> requests.Response:
@@ -391,7 +403,11 @@ class GabbClient:
 
         filtered_locals = GabbClient.prepare_params_for_api_call(locals_, ["device_id"])
 
-        # print(filtered_locals)
+        logger.debug(
+            "Payload for update_device_settings for device %s: %s",
+            device_id,
+            filtered_locals,
+        )
 
         return self._session.put(f"settings/{device_id}", json=filtered_locals)
 
@@ -441,6 +457,9 @@ class GabbClient:
         """
         filtered_locals = GabbClient.prepare_params_for_api_call(
             locals(), ["device_id"]
+        )
+        logger.debug(
+            "Payload for set_step_goal for device %s: %s", device_id, filtered_locals
         )
 
         return self._session.post(f"device/goals/{device_id}", json=filtered_locals)
@@ -525,6 +544,8 @@ class GabbClient:
         payload = GabbClient.prepare_params_for_api_call(
             locals_=locals_, title_case=True
         )
+
+        logger.debug("Payload for create_lock_mode_schedule: %s", payload)
 
         return self._session.post("alarms", json=payload)
 
@@ -618,6 +639,8 @@ class GabbClient:
         payload = GabbClient.prepare_params_for_api_call(
             locals_=locals_, title_case=True, values_to_filter=["lock_mode_schedule_id"]
         )
+
+        logger.debug("Payload for update_lock_mode_schedule: %s", payload)
 
         return self._session.put(f"alarms/{lock_mode_schedule_id}", json=payload)
 
@@ -724,6 +747,10 @@ class GabbClient:
         """
         payload = GabbClient.prepare_params_for_api_call(locals_=locals())
 
+        logger.debug(
+            "Payload for add_text_preset for device %s: %s", device_id, payload
+        )
+
         return self._session.post(f"tokk/device/{device_id}/preset", json=payload)
 
     def update_text_preset(
@@ -750,6 +777,12 @@ class GabbClient:
         """
         payload = GabbClient.prepare_params_for_api_call(locals_=locals())
 
+        logger.debug(
+            "Payload for update_text_preset for device %s with preset id %s: %s",
+            device_id,
+            preset_id,
+            payload,
+        )
         return self._session.put(
             f"tokk/device/{device_id}/preset/{preset_id}",
             json=payload,
@@ -820,6 +853,8 @@ class GabbClient:
 
         self._session.use_alt_base_url_next_request = True
 
+        logger.debug("Payload for add_safezone: %s", payload)
+
         return self._session.post("safezone/add", json=payload)
 
     def delete_safezone(self, zone_id: str) -> requests.Response:
@@ -888,6 +923,7 @@ class GabbClient:
 
         self._session.use_alt_base_url_next_request = True
 
+        logger.debug("Payload for update_safezone for zone_id %s: %s", zone_id, payload)
         return self._session.post(f"safezone/edit?zoneId={zone_id}", json=payload)
 
     @staticmethod
