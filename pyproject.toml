@@ -50,5 +50,8 @@ warn_return_any = true
 warn_unused_configs = true
 mypy_path = ["."]
 
+[tool.pylint.MASTER]
+ignore-paths = '^.direnv/.*$,^.venv/.*$,^.mypy_cace/.*$'
+
 [tool.pylint.basic]
 indent-string = "  "

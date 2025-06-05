@@ -54,13 +54,20 @@ def setup_mqtt_client():
   Setup and connect the MQTT client.
   """
   try:
+    logger.info(
+      "Setting up MQTT client credentials: %s",
+      {"username": MQTT_USERNAME, "password": MQTT_PASSWORD},
+    )
     mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
     mqtt_client.on_connect = on_connect
     mqtt_client.on_disconnect = on_disconnect
     mqtt_client.on_message = on_message
 
+    logger.info(
+      "Attempting to connect to MQTT broker at %s:%s", MQTT_HOST, MQTT_PORT
+    )
     mqtt_client.connect(MQTT_HOST, MQTT_PORT, 60)
-    logger.info("Connected to MQTT broker at %s:%s", MQTT_HOST, MQTT_PORT)
+    logger.info("Connected.")
   except Exception:
     logger.exception("Failed to connect to MQTT broker")
     raise
