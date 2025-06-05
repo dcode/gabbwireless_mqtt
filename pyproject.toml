@@ -1,9 +1,9 @@
 [project]
 name = "gabb_mqtt_publisher"
 authors = [
-    {name = "Maksim Beliaev", email = "beliaev.m.s@gmail.com"},
-    {name = "Bo Yang", email = "boy@kth.se"},
-    {name = "Derek Ditch", email = "dcode@noreply.users.github.com"}
+  { name = "Maksim Beliaev", email = "beliaev.m.s@gmail.com" },
+  { name = "Bo Yang", email = "boy@kth.se" },
+  { name = "Derek Ditch", email = "dcode@noreply.users.github.com" },
 ]
 readme = "README.md"
 requires-python = ">=3.7"
@@ -11,7 +11,14 @@ classifiers = ["License :: OSI Approved :: Apache Software License"]
 version = "0.1.1"
 
 [project.optional-dependencies]
-dev = ["mypy==1.16.0", "ruff==0.11.12", "dmypy-ls==1.13", "pylint==3.3.7"]
+dev = [
+  "mypy==1.16.0",
+  "ruff==0.11.12",
+  "dmypy-ls==1.13",
+  "pylint==3.3.7",
+  "types-python-dateutil==2.9.0.20250516",
+  "types-requests==2.32.0.20250602",
+]
 
 [tool.ruff]
 select = [
@@ -42,3 +49,6 @@ python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 mypy_path = ["."]
+
+[tool.pylint.basic]
+indent-string = "  "

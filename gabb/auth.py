@@ -27,6 +27,15 @@ from dateutil import parser
 
 logger = logging.getLogger(__name__)
 
+"""dict: A dict of static headers that the API  requires in order to function properly"""
+REQUIRED_AUTH_HEADERS = {
+  "X-Accept-Language": "en-US",
+  "X-Accept-Offset": "-5.000000",
+  "Accept-Version": "1.0",
+  "User-Agent": "FiLIP-iOS",
+  "X-Accept-Version": "1.0",
+  "Content-Type": "application/json",
+}
 
 class GabbAuth(requests.auth.AuthBase):  # pylint: disable=too-few-public-methods
   """Custom requests authentication class for the Gabb API
@@ -55,18 +64,9 @@ class GabbAuth(requests.auth.AuthBase):  # pylint: disable=too-few-public-method
   """str: The current active access token for the API. Do not manipulate directly."""
   _refresh_token = ""
   """str: The API endpoint used for token refresh. Do not manipulate directly."""
-  _exp_date = ""
+  _exp_date: datetime.datetime | None = None
   """datetime.datetime: Datetime object representing when the current active
     token held in _access_token will expire."""
-  _required_headers = {
-    "X-Accept-Language": "en-US",
-    "X-Accept-Offset": "-5.000000",
-    "Accept-Version": "1.0",
-    "User-Agent": "FiLIP-iOS",
-    "X-Accept-Version": "1.0",
-    "Content-Type": "application/json",
-  }
-  """dict: A dict of static headers that the API  requires in order to function properly"""
 
   def __init__(
     self,
@@ -106,7 +106,9 @@ class GabbAuth(requests.auth.AuthBase):  # pylint: disable=too-few-public-method
 
     self._new_authentication()
 
-  def __call__(self, request: requests.Request) -> requests.Request:
+  def __call__(
+    self, request: requests.PreparedRequest
+  ) -> requests.PreparedRequest:
     """Manipulate the request object to add the correct bearer token
 
     When the class is called, we check and see if the existing access token
@@ -141,7 +143,10 @@ class GabbAuth(requests.auth.AuthBase):  # pylint: disable=too-few-public-method
     logger.debug("Payload for new authentication: %s", payload)
 
     resp = requests.post(
-      self.auth_url, headers=self._required_headers, data=payload, timeout=15
+      self.auth_url,
+      headers=REQUIRED_AUTH_HEADERS,
+      data=payload,
+      timeout=15,
     )
 
     self._update_tokens_from_response(response=resp)
@@ -151,7 +156,10 @@ class GabbAuth(requests.auth.AuthBase):  # pylint: disable=too-few-public-method
     payload = json.dumps({"refreshToken": self._refresh_token})
 
     resp = requests.post(
-      self.refresh_url, headers=self._required_headers, data=payload, timeout=15
+      self.refresh_url,
+      headers=REQUIRED_AUTH_HEADERS,
+      data=payload,
+      timeout=15,
     )
 
     self._update_tokens_from_response(response=resp)
@@ -170,4 +178,6 @@ class GabbAuth(requests.auth.AuthBase):  # pylint: disable=too-few-public-method
   def _token_expired(self) -> bool:
     """bool: Returns True if the current active access token has expired and False
     if it hasn't"""
-    return self._exp_date < datetime.datetime.now(datetime.timezone.utc)
+    return self._exp_date is None or self._exp_date < datetime.datetime.now(
+      datetime.timezone.utc
+    )
