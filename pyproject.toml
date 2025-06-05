@@ -52,6 +52,7 @@ mypy_path = ["."]
 
 [tool.pylint.MASTER]
 ignore-paths = '^.direnv/.*$,^.venv/.*$,^.mypy_cace/.*$'
+disable = ["broad-exception-caught"]
 
 [tool.pylint.basic]
 indent-string = "  "

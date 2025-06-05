@@ -59,63 +59,63 @@ class SensitiveDataFilter(logging.Filter):
 
 
 def init_logging(
-    log_level: str = "DEBUG", formatter: str = "console"
+  log_level: str = "DEBUG", formatter: str = "console"
 ) -> logging.Logger:
+  LOG_CONFIG = {
+    "version": 1,
+    "handlers": {
+      "stdout": {
+        "class": "logging.StreamHandler",
+        "stream": "ext://sys.stdout",
+        "formatter": formatter,
+      }
+    },
+    "formatters": {
+      "json": {
+        "format": (
+          '{"msg":"%(message)s","level":"%(levelname)s",'
+          '"file":"%(filename)s","line":%(lineno)d,'
+          '"module":"%(module)s","func":"%(funcName)s"}'
+        ),
+        "datefmt": "%Y-%m-%dT%H:%M:%SZ",
+      },
+      "console": {
+        "format": "%(asctime)s %(levelname)s : %(message)s",
+        "datefmt": "%Y-%m-%dT%H:%M:%SZ",
+      },
+    },
+    "root": {"handlers": ["stdout"], "level": log_level},
+  }
+  logging.Formatter.converter = time.gmtime
+  logging.config.dictConfig(LOG_CONFIG)
+  # HTTPConnection.debuglevel = 1
 
+  # Determine the name of the calling module
+  calling_module_name = __name__  # Default to 'log' (name of current module)
+  try:
+    # inspect.stack()[0] is the current frame (init_logging in log.py)
+    # inspect.stack()[1] is the frame of the direct caller of init_logging
+    caller_frame_info = inspect.stack()[1]
+    caller_module = inspect.getmodule(caller_frame_info[0])
 
-    LOG_CONFIG = {
-        "version": 1,
-        "handlers": {
-            "stdout": {
-                "class": "logging.StreamHandler",
-                "stream": "ext://sys.stdout",
-                "formatter": formatter,
-            }
-        },        "formatters": {
-            "json": {
-                "format": (
-                    '{"msg":"%(message)s","level":"%(levelname)s",'
-                    '"file":"%(filename)s","line":%(lineno)d,'
-                    '"module":"%(module)s","func":"%(funcName)s"}'
-                ),
-                "datefmt": "%Y-%m-%dT%H:%M:%SZ",
-            },
-            "console": {
-                "format": "%(asctime)s %(levelname)s : %(message)s",
-                "datefmt": "%Y-%m-%dT%H:%M:%SZ",
-            },
-        },
-        "root": {"handlers": ["stdout"], "level": log_level},
-    }
-    logging.Formatter.converter = time.gmtime
-    logging.config.dictConfig(LOG_CONFIG)
-    # HTTPConnection.debuglevel = 1
+    if caller_module:
+      # If the caller has a module (e.g., another .py file, or __main__ for a script)
+      calling_module_name = caller_module.__name__
+    else:
+      # If inspect.getmodule returns None (e.g., exec'd code, interactive session <stdin>)
+      if caller_frame_info.filename == "<stdin>":
+        calling_module_name = "interactive"
+      else:
+        # Fallback for other module-less contexts
+        calling_module_name = "unknown_caller"
+  except IndexError:
+    # Call stack is too shallow. Defaults to __name__ ('log').
+    pass
+  except Exception:
+    # Any other error during introspection. Defaults to __name__ ('log').
+    pass
+  logger = logging.getLogger(calling_module_name)
+  logger.setLevel(log_level)
+  logger.info("Logging level set to: %s", logging.getLevelName(logger.level))
 
-    # Determine the name of the calling module
-    calling_module_name = __name__  # Default to 'log' (name of current module)
-    try:
-        # inspect.stack()[0] is the current frame (init_logging in log.py)
-        # inspect.stack()[1] is the frame of the direct caller of init_logging
-        caller_frame_info = inspect.stack()[1]
-        caller_module = inspect.getmodule(caller_frame_info[0])
-
-        if caller_module:
-            # If the caller has a module (e.g., another .py file, or __main__ for a script)
-            calling_module_name = caller_module.__name__
-        else:
-            # If inspect.getmodule returns None (e.g., exec'd code, interactive session <stdin>)
-            if caller_frame_info.filename == '<stdin>':
-                calling_module_name = 'interactive'
-            else:
-                # Fallback for other module-less contexts
-                calling_module_name = 'unknown_caller'
-    except IndexError:
-        # Call stack is too shallow. Defaults to __name__ ('log').
-        pass
-    except Exception:
-        # Any other error during introspection. Defaults to __name__ ('log').
-        pass
-    logger = logging.getLogger(calling_module_name)
-    logger.info("Logging level set to: %s", log_level)
-
-    return logger
+  return logger
