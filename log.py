@@ -80,7 +80,7 @@ def init_logging(
         "datefmt": "%Y-%m-%dT%H:%M:%SZ",
       },
       "console": {
-        "format": "%(asctime)s %(levelname)s : %(message)s",
+        "format": "%(asctime)s %(name)s %(levelname)s : %(message)s",
         "datefmt": "%Y-%m-%dT%H:%M:%SZ",
       },
     },
