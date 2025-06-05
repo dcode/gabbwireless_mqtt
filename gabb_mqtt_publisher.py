@@ -156,7 +156,7 @@ def generate_homeassistant_discovery_messages(
     base_topic = f"{MQTT_DISCOVERY_TOPIC}/sensor/{root_topic}_{device_id}"
 
     # Generate sensor discovery messages
-    for key, value in device.items():
+    for key, _ in device.items():
       sensor_name = "".join(word.capitalize() for word in key.split("_"))
       sensor_topic = f"{base_topic}/{key}/config"
       device_class = key_to_device_class.get(key, {}).get("device_class")

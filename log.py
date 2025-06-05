@@ -3,7 +3,6 @@ import logging
 import logging.config
 import re
 import time
-from http.client import HTTPConnection  # py3
 
 # 1. Define the regex patterns of sensitive data
 regex_patterns = [
@@ -34,14 +33,14 @@ class SensitiveDataFilter(logging.Filter):
 
     def mask_sensitive_args(self, args):
         if isinstance(args, dict):
-            new_args = args.copy()
-            for key in args.keys():
-                if key in sensitive_keys:
-                    new_args[key] = "******"
-                else:
-                    # mask sensitive data in dict values
-                    new_args[key] = self.mask_sensitive_msg(args[key])
-            return new_args
+          new_args = args.copy()
+          for key in args:
+            if key in sensitive_keys:
+              new_args[key] = "******"
+            else:
+              # mask sensitive data in dict values
+              new_args[key] = self.mask_sensitive_msg(args[key])
+          return new_args
         # when there are multi arg in record.args
         return (self.mask_sensitive_msg(arg) for arg in args)
 

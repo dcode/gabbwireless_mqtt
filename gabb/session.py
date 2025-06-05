@@ -15,7 +15,9 @@ Example:
 """
 
 from urllib.parse import urljoin
+
 import requests
+
 from gabb.auth import GabbAuth
 
 
@@ -27,8 +29,8 @@ class GabbSession(requests.Session):
     self,
     username: str,
     password: str,
-    base_url: str = None,
-    alt_base_url: str = None,
+    base_url: str,
+    alt_base_url: str,
   ) -> None:
     """Catch and set base_url on instance, then pass up to requests.Session"""
     super().__init__()
@@ -40,16 +42,20 @@ class GabbSession(requests.Session):
     """Flag to use alternative base URL for the session"""
     self.auth = GabbAuth(username=username, password=password)
 
-  def request(self, method: str, url: str, *args, **kwargs) -> requests.Request:
+  def request(
+    self, method: str | bytes, url: str | bytes, *args, **kwargs
+  ) -> requests.Response:
     """Catch and inject in the base_url (or alt_base_url), then pass up to
     requests.request()"""
+
+    urlstr = url if isinstance(url, str) else url.decode("utf-8")
 
     # If the use_alt_base_url_next_request flag is true, use alt base URL,
     # then set flag to False. Otherwise, use base URL
     if self.use_alt_base_url_next_request:
-      joined_url = urljoin(self.alt_base_url, url)
+      joined_url = urljoin(base=self.alt_base_url, url=urlstr)
       self.use_alt_base_url_next_request = False
     else:
-      joined_url = urljoin(self.base_url, url)
+      joined_url = urljoin(self.base_url, urlstr)
 
     return super().request(method, joined_url, *args, **kwargs)
