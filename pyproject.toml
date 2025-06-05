@@ -1,0 +1,44 @@
+[project]
+name = "gabb_mqtt_publisher"
+authors = [
+    {name = "Maksim Beliaev", email = "beliaev.m.s@gmail.com"},
+    {name = "Bo Yang", email = "boy@kth.se"},
+    {name = "Derek Ditch", email = "dcode@noreply.users.github.com"}
+]
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = ["License :: OSI Approved :: Apache Software License"]
+version = "0.1.1"
+
+[project.optional-dependencies]
+dev = ["mypy==1.16.0", "ruff==0.11.12", "dmypy-ls==1.13", "pylint==3.3.7"]
+
+[tool.ruff]
+select = [
+  # pycodestyle
+  "E",
+  # Pyflakes
+  "F",
+  # pyupgrade
+  "UP",
+  # flake8-bugbear
+  "B",
+  # flake8-simplify
+  "SIM",
+  # isort
+  "I",
+  # Ruff
+  "RUF",
+]
+ignore = [
+  "E501",   # ignore line-length (e.g. long docstring)
+  "SIM117", # ignore combine with statements (it leads to harder to read code)
+]
+line-length = 80
+indent-width = 2
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+mypy_path = ["."]
