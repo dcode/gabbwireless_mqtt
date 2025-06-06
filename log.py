@@ -84,6 +84,9 @@ def init_logging(
         "datefmt": "%Y-%m-%dT%H:%M:%SZ",
       },
     },
+    "loggers": {
+      "gabb": {"handlers": ["stdout"], "level": log_level},
+    },
     "root": {"handlers": ["stdout"], "level": log_level},
   }
   logging.Formatter.converter = time.gmtime
